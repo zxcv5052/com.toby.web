@@ -13,7 +13,7 @@ import java.util.Vector;
 public class JdbcContext {
     private DataSource dataSource;
 
-    public void setDataSource(DataSource dataSource){
+    public JdbcContext(DataSource dataSource){
         this.dataSource = dataSource;
     }
 

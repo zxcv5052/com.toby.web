@@ -29,9 +29,6 @@ public class UserDaoTest {
 
     @Before
     public void setUp(){
-        DataSource dataSource = new SingleConnectionDataSource(
-                "jdbc:mysql://localhost/edu_toby_spring","root","cs1234",true
-        );
         user1 = new User("user", "kyeong", "hihi");
         user2 = new User("user1", "kyeong2", "hihi");
         user3 = new User("user2", "kyeong3", "hihi");

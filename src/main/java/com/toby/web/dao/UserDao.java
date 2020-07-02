@@ -1,22 +1,21 @@
 package com.toby.web.dao;
 
-
+import com.sun.rowset.internal.Row;
 import com.toby.web.domain.User;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.List;
 
 public class UserDao {
     private DataSource dataSource;
-    private JdbcContext jdbcContext;
+    private JdbcTemplate jdbcTemplate;
 
     public void setDataSource(DataSource dataSource)
     {
-        this.jdbcContext = new JdbcContext();
-
-        this.jdbcContext.setDataSource(dataSource);
-
-        this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     /**
@@ -63,52 +62,36 @@ public class UserDao {
          *             }
          *         );
          */
-        jdbcContext.executeSQL("insert  into user(id,name,password) values(?,?,?)",
-                user.getId(),
-                user.getName(),
-                user.getPassword());
+        System.out.println(user.getId()+ "," + user.getName() +"," + user.getPassword());
+        this.jdbcTemplate.update("insert into user(id,name,password) values(?,?,?)", user.getId(), user.getName(), user.getPassword());
     }
     public User get(String id) throws ClassNotFoundException, SQLException {
-        Connection conn = dataSource.getConnection();
-
-
-        PreparedStatement ps = conn.prepareStatement(
-                "select * from user where id=?"
-        );
-        ps.setString(1,id);
-
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        User user = new User();
-        user.setId(rs.getString("id"));
-        user.setName(rs.getString("name"));
-        user.setPassword(rs.getString("password"));
-
-        rs.close();
-        ps.close();
-        conn.close();
-
-        return user;
+       return this.jdbcTemplate.queryForObject("select * from user where id=?",
+               new Object[]{id},this.userMapper);
     }
 
     public void deleteAll() throws SQLException{
-        jdbcContext.executeSQL("delete from user");
+        this.jdbcTemplate.update("delete from user");
     }
 
     public int getCount() throws SQLException{
-        Connection c = dataSource.getConnection();
-
-        PreparedStatement ps = c.prepareStatement("select count(*) from user");
-
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int count = rs.getInt(1);
-
-        rs.close();
-        ps.close();
-        c.close();
-
-        return count;
+        return this.jdbcTemplate.queryForObject("select count(*) from user", int.class);
     }
 
+    public List<User> getAll(){
+        return this.jdbcTemplate.query("select * from user order by id",
+                this.userMapper);
+    }
+
+    private RowMapper<User> userMapper =
+            new RowMapper<User>() {
+                @Override
+                public User mapRow(ResultSet resultSet, int i) throws SQLException {
+                    User user = new User();
+                    user.setId(resultSet.getString("id"));
+                    user.setName(resultSet.getString("name"));
+                    user.setPassword(resultSet.getString("password"));
+                    return user;
+                }
+            };
 }
