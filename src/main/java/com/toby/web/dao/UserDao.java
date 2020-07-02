@@ -45,22 +45,28 @@ public class UserDao {
          *             }
          *         }
          */
-        // 익명 내부 클래스 생성
-        this.jdbcContext.workWithStatement(
-            new StatementStrategy() {
-                @Override
-                public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-                    PreparedStatement ps =  c.prepareStatement(
-                                                     "insert  into user(id,name,password) values(?,?,?)"
-                                             );
-                    ps.setString(1, user.getId());
-                    ps.setString(2,user.getName());
-                    ps.setString(3,user.getPassword());
 
-                    return ps;
-                }
-            }
-        );
+        /** 익명 내부 클래스 생성
+         * this.jdbcContext.workWithStatement(
+         *             new StatementStrategy() {
+         *                 @Override
+         *                 public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+         *                     PreparedStatement ps =  c.prepareStatement(
+         *                                                      "insert  into user(id,name,password) values(?,?,?)"
+         *                                              );
+         *                     ps.setString(1, user.getId());
+         *                     ps.setString(2,user.getName());
+         *                     ps.setString(3,user.getPassword());
+         *
+         *                     return ps;
+         *                 }
+         *             }
+         *         );
+         */
+        jdbcContext.executeSQL("insert  into user(id,name,password) values(?,?,?)",
+                user.getId(),
+                user.getName(),
+                user.getPassword());
     }
     public User get(String id) throws ClassNotFoundException, SQLException {
         Connection conn = dataSource.getConnection();
@@ -86,14 +92,7 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException{
-        this.jdbcContext.workWithStatement(
-                new StatementStrategy() {
-                    @Override
-                    public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-                        return c.prepareStatement("delete from user");
-                    }
-                }
-        );
+        jdbcContext.executeSQL("delete from user");
     }
 
     public int getCount() throws SQLException{

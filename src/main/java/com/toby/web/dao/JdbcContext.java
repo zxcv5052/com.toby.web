@@ -7,6 +7,7 @@ import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Vector;
 
 @Configuration
 public class JdbcContext {
@@ -32,5 +33,21 @@ public class JdbcContext {
             if(ps!=null) try{ ps.close(); } catch (SQLException e){}
             if(c!=null) try{ c.close(); } catch (SQLException e){}
         }
+    }
+    // String... parameter  -> 가변 인자
+    public void executeSQL(final String query, final String... parameter) throws SQLException{
+        workWithStatement(
+                new StatementStrategy() {
+                    @Override
+                    public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+                        PreparedStatement ps = c.prepareStatement(query);
+                        int index = 1;
+                        for(String o : parameter){
+                            ps.setString(index++,o);
+                        }
+                        return ps;
+                    }
+                }
+        );
     }
 }
